@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QGraphicsPixmapItem,
                              QMainWindow, QMessageBox)
 
 import arcane_viewer.arcane as arcane
-import arcane_viewer.arcane.threads as arcane_threads
+
 import arcane_viewer.ui.custom_widgets as arcane_widgets
 import arcane_viewer.ui.dialogs as arcane_dialogs
 
@@ -36,8 +36,8 @@ class DesktopWindow(QMainWindow):
         self.desktop_graphics_pixmap: Optional[QGraphicsPixmapItem] = None
         self.desktop_pixmap: Optional[QPixmap] = None
 
-        self.desktop_thread: Optional[arcane_threads.VirtualDesktopThread] = None
-        self.events_thread: Optional[arcane_threads.EventsThread] = None
+        self.desktop_thread: Optional[arcane.VirtualDesktopThread] = None
+        self.events_thread: Optional[arcane.EventsThread] = None
 
         self.session = session
 
@@ -89,7 +89,7 @@ class DesktopWindow(QMainWindow):
             (Tangent Universe) """
         self.stop_desktop_thread()
 
-        self.desktop_thread = arcane_threads.VirtualDesktopThread(self.session)
+        self.desktop_thread = arcane.VirtualDesktopThread(self.session)
         self.desktop_thread.received_dirty_rect_signal.connect(self.update_scene)
         self.desktop_thread.open_cellar_door.connect(self.open_cellar_door)
         self.desktop_thread.thread_finished.connect(self.thread_finished)
@@ -120,7 +120,7 @@ class DesktopWindow(QMainWindow):
 
         self.stop_events_thread()
 
-        self.events_thread = arcane_threads.EventsThread(self.session)
+        self.events_thread = arcane.EventsThread(self.session)
         self.events_thread.thread_finished.connect(self.thread_finished)
         self.events_thread.start()
 

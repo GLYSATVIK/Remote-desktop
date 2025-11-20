@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
                              QWidget)
 
 import arcane_viewer.arcane as arcane
-import arcane_viewer.arcane.threads as arcane_threads
+
 import arcane_viewer.ui.dialogs as arcane_dialogs
 import arcane_viewer.ui.forms as arcane_forms
 import arcane_viewer.ui.utilities as utilities
@@ -28,7 +28,7 @@ class ConnectWindow(utilities.QCenteredMainWindow):
     def __init__(self) -> None:
         super().__init__()
 
-        self.__connect_thread: Optional[arcane_threads.ConnectThread] = None
+        self.__connect_thread: Optional[arcane.ConnectThread] = None
         self.__connecting_dialog: Optional[arcane_dialogs.ConnectingDialog] = None
         self.desktop_window: Optional[arcane_forms.DesktopWindow] = None
         self.session: Optional[arcane.Session] = None
@@ -178,7 +178,7 @@ class ConnectWindow(utilities.QCenteredMainWindow):
                 raise Exception("Password field cannot be empty.")
 
             # Attempt connection
-            self.__connect_thread = arcane_threads.ConnectThread(
+            self.__connect_thread = arcane.ConnectThread(
                 self.server_address_input.text(),
                 self.server_port_input.value(),
                 self.password_input.text(),
@@ -213,31 +213,10 @@ class ConnectWindow(utilities.QCenteredMainWindow):
         if self.__connecting_dialog is not None and self.__connecting_dialog.isVisible():
             self.__connecting_dialog.close()
 
-        if session is None or session.server_fingerprint is None:
+        if session is None:
             return
 
         self.session = session
-
-        # Show Server Certificate Dialog if certificate is not (yet) trusted
-        settings = QSettings(arcane.APP_ORGANIZATION_NAME, arcane.APP_NAME)
-        trusted_certificates = settings.value(arcane.SETTINGS_KEY_TRUSTED_CERTIFICATES, [])
-
-        if session.server_fingerprint not in trusted_certificates:
-            server_certificate_dialog = arcane_dialogs.ServerCertificateDialog(self, session.server_fingerprint)
-            signal = server_certificate_dialog.exec()
-            if signal == QDialog.DialogCode.Rejected:
-                return
-
-            if server_certificate_dialog.trust_certificate_checkbox.isChecked():
-                trusted_certificates.append(session.server_fingerprint)
-
-                # Save trusted certificates to settings store
-                settings.setValue(arcane.SETTINGS_KEY_TRUSTED_CERTIFICATES, trusted_certificates)
-
-                # Save extra information about the certificate (Default)
-                settings.setValue(f"{arcane.SETTINGS_KEY_TRUSTED_CERTIFICATES}.{session.server_fingerprint}", {
-                    "display_name": session.display_name,
-                })
 
         # Show the Remote Desktop Window
         self.desktop_window = arcane_forms.DesktopWindow(self, self.session)
