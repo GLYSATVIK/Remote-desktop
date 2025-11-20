@@ -1,0 +1,9 @@
+include README.md
+include LICENSE
+include DISCLAIMER.md
+include requirements.txt
+
+include arcane_viewer/assets/*
+
+exclude arcane_viewer/assets/default.json
+recursive-exclude .DS_Store
